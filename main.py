@@ -12,10 +12,19 @@ def health_check():
 
 
 @app.get("/sightings")
-def get_sightings():
+def get_sightings(location: str | None = None):
     response = httpx.get(ELANCO_URL, timeout=10.0)
     response.raise_for_status()
 
     sightings = response.json()
+
+    if location is not None:
+        filtered_sightings = []
+
+        for sighting in sightings:
+            if sighting["location"].casefold() == location.strip().casefold():
+                filtered_sightings.append(sighting)
+
+        sightings = filtered_sightings
 
     return sightings
