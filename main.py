@@ -1,5 +1,7 @@
+from datetime import date, datetime
+
 import httpx
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 app = FastAPI(title="Elanco Tick Sightings API")
 
@@ -12,19 +14,37 @@ def health_check():
 
 
 @app.get("/sightings")
-def get_sightings(location: str | None = None):
+def get_sightings(
+    location: str | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
+):
+    if start_date is not None and end_date is not None:
+        if start_date > end_date:
+            raise HTTPException(
+                status_code=400,
+                detail="start_date must be on or before end_date",
+            )
+
     response = httpx.get(ELANCO_URL, timeout=10.0)
     response.raise_for_status()
 
     sightings = response.json()
+    filtered_sightings = []
 
-    if location is not None:
-        filtered_sightings = []
+    for sighting in sightings:
+        sighting_date = datetime.fromisoformat(sighting["date"]).date()
 
-        for sighting in sightings:
-            if sighting["location"].casefold() == location.strip().casefold():
-                filtered_sightings.append(sighting)
+        if location is not None:
+            if sighting["location"].casefold() != location.strip().casefold():
+                continue
 
-        sightings = filtered_sightings
+        if start_date is not None and sighting_date < start_date:
+            continue
 
-    return sightings
+        if end_date is not None and sighting_date > end_date:
+            continue
+
+        filtered_sightings.append(sighting)
+
+    return filtered_sightings
