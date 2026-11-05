@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from processing import clean_sightings
 
+from processing import clean_sightings, count_by_region 
+
 import httpx
 from fastapi import FastAPI, HTTPException
 
@@ -50,3 +52,12 @@ def get_sightings(
         filtered_sightings.append(sighting)
 
     return filtered_sightings
+
+@app.get("/stats/regions")
+def get_regional_stats():
+    response = httpx.get(ELANCO_URL, timeout=10.0)
+    response.raise_for_status()
+
+    sightings = clean_sightings(response.json())
+
+    return count_by_region(sightings)

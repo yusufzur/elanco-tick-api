@@ -37,3 +37,36 @@ def clean_sightings(sightings):
         cleaned.append(sighting)
 
     return cleaned
+
+
+CITY_TO_REGION = {
+    "manchester": "North West",
+    "liverpool": "North West",
+    "london": "London",
+    "birmingham": "West Midlands",
+    "southampton": "South East",
+    "nottingham": "East Midlands",
+    "leicester": "East Midlands",
+    "sheffield": "Yorkshire and the Humber",
+    "leeds": "Yorkshire and the Humber",
+    "newcastle": "North East",
+    "bristol": "South West",
+    "glasgow": "Scotland",
+    "edinburgh": "Scotland",
+    "cardiff": "Wales",
+}
+
+
+def count_by_region(sightings):
+    counts = {}
+
+    for sighting in sightings:
+        city = sighting["location"].strip().casefold()
+        region = CITY_TO_REGION.get(city, "Unknown")
+
+        if region not in counts:
+            counts[region] = 0
+
+        counts[region] += 1
+
+    return counts
