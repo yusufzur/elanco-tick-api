@@ -70,3 +70,17 @@ def count_by_region(sightings):
         counts[region] += 1
 
     return counts
+
+def count_by_month(sightings):
+    counts = {}
+
+    for sighting in sightings:
+        sighting_date = datetime.fromisoformat(sighting["date"])
+        month = sighting_date.strftime("%Y-%m")
+
+        if month not in counts:
+            counts[month] = 0
+
+        counts[month] += 1
+
+    return dict(sorted(counts.items()))

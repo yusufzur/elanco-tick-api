@@ -1,8 +1,6 @@
 from datetime import date, datetime
 
-from processing import clean_sightings
-
-from processing import clean_sightings, count_by_region 
+from processing import clean_sightings, count_by_region, count_by_month
 
 import httpx
 from fastapi import FastAPI, HTTPException
@@ -61,3 +59,12 @@ def get_regional_stats():
     sightings = clean_sightings(response.json())
 
     return count_by_region(sightings)
+
+@app.get("/stats/trends")
+def get_monthly_trends():
+    response = httpx.get(ELANCO_URL, timeout=10.0)
+    response.raise_for_status()
+
+    sightings = clean_sightings(response.json())
+
+    return count_by_month(sightings)
