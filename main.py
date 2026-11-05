@@ -1,13 +1,11 @@
 from datetime import date, datetime
 
-from processing import clean_sightings, count_by_region, count_by_month
-
-import httpx
 from fastapi import FastAPI, HTTPException
 
-app = FastAPI(title="Elanco Tick Sightings API")
+from elanco_client import fetch_sightings
+from processing import count_by_region, count_by_month
 
-ELANCO_URL = "https://dev-task.elancoapps.com/data/tick-sightings"
+app = FastAPI(title="Elanco Tick Sightings API")
 
 
 @app.get("/health")
@@ -28,17 +26,14 @@ def get_sightings(
                 detail="start_date must be on or before end_date",
             )
 
-    response = httpx.get(ELANCO_URL, timeout=10.0)
-    response.raise_for_status()
-
-    sightings = clean_sightings(response.json())
+    sightings = fetch_sightings()
     filtered_sightings = []
 
     for sighting in sightings:
         sighting_date = datetime.fromisoformat(sighting["date"]).date()
 
         if location is not None:
-            if sighting["location"].casefold() != location.strip().casefold():
+            if sighting["location"].strip().casefold() != location.strip().casefold():
                 continue
 
         if start_date is not None and sighting_date < start_date:
@@ -53,18 +48,11 @@ def get_sightings(
 
 @app.get("/stats/regions")
 def get_regional_stats():
-    response = httpx.get(ELANCO_URL, timeout=10.0)
-    response.raise_for_status()
-
-    sightings = clean_sightings(response.json())
-
+    sightings = fetch_sightings()
     return count_by_region(sightings)
+
 
 @app.get("/stats/trends")
 def get_monthly_trends():
-    response = httpx.get(ELANCO_URL, timeout=10.0)
-    response.raise_for_status()
-
-    sightings = clean_sightings(response.json())
-
+    sightings = fetch_sightings()
     return count_by_month(sightings)
