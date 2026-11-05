@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 
 from elanco_client import fetch_sightings
 from processing import count_by_region, count_by_month
@@ -18,6 +18,8 @@ def get_sightings(
     location: str | None = None,
     start_date: date | None = None,
     end_date: date | None = None,
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
 ):
     if start_date is not None and end_date is not None:
         if start_date > end_date:
@@ -44,7 +46,7 @@ def get_sightings(
 
         filtered_sightings.append(sighting)
 
-    return filtered_sightings
+    return filtered_sightings[offset : offset + limit]
 
 @app.get("/stats/regions")
 def get_regional_stats():

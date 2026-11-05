@@ -147,3 +147,46 @@ def test_endpoints_return_fetch_errors_as_json(monkeypatch, path):
     assert response.json() == {
         "detail": "Simulated upstream timeout",
     }
+
+def test_pagination_returns_requested_slice(sample_sightings):
+    response = client.get(
+        "/sightings",
+        params={"limit": 1, "offset": 1},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [sample_sightings[1]]
+
+
+def test_pagination_happens_after_filtering(sample_sightings):
+    response = client.get(
+        "/sightings",
+        params={"location": "London", "limit": 1, "offset": 0},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [sample_sightings[2]]
+
+
+def test_offset_beyond_results_returns_empty_list(sample_sightings):
+    response = client.get(
+        "/sightings",
+        params={"offset": 100},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"limit": 0},
+        {"limit": 1001},
+        {"offset": -1},
+    ],
+)
+def test_invalid_pagination_is_rejected(sample_sightings, params):
+    response = client.get("/sightings", params=params)
+
+    assert response.status_code == 422
