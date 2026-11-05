@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from processing import clean_sightings
+
 import httpx
 from fastapi import FastAPI, HTTPException
 
@@ -29,7 +31,7 @@ def get_sightings(
     response = httpx.get(ELANCO_URL, timeout=10.0)
     response.raise_for_status()
 
-    sightings = response.json()
+    sightings = clean_sightings(response.json())
     filtered_sightings = []
 
     for sighting in sightings:
