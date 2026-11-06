@@ -163,6 +163,12 @@ External requests are replaced with controlled responses, so tests do not depend
 
 The implementation prioritises the core requirements and testable behaviour. An optional future extension could investigate unusual monthly reporting patterns, with careful evaluation of data quality and seasonal effects.
 
+
+## Video walkthrough
+
+https://www.youtube.com/watch?v=M_5dPrgvbSQ
+The walkthrough demonstrates the API endpoints, explains the implementation and design decisions, and covers automated tests and current limitations.
+
 ## Data source
 
 [Elanco API documentation](https://dev-task.elancoapps.com)
